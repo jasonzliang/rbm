@@ -83,25 +83,27 @@ class rbm(object):
         samples.append(np.copy(self.visibleLayer))
     return samples
 
-  def generateSamples(self, data, n=10, dim=28):
+  def generateSamples(self, data, d=10, n=9, dim=28):
     print "generating samples"
-    plotDim = int(math.ceil(math.sqrt(n)))
-    myInput = data[0,:]
-    samples = self.genSamplesHelper(myInput, n=n)
-    for i in xrange(0, n, 1):
-      # sample = self.genSamplesHelper(myInput, n=1)[0]
-
-      # origImage = myInput.reshape((dim, dim))
-      # plt.subplot(plotDim,plotDim,i+1)
-      # plt.imshow(origImage, interpolation='nearest')
-      # plt.set_cmap('binary')
-      # plt.axis('off')
-
-      sampleImage = samples[i].reshape((dim,dim))
-      plt.subplot(plotDim,plotDim,i+1)
-      plt.imshow(sampleImage, interpolation='nearest')
-      plt.set_cmap('binary')
+    # plotDim = int(math.ceil(math.sqrt(n)))
+    counter = 1
+    for i in xrange(d):
+      myInput = data[i,:]
+      origImage = myInput.reshape((dim, dim))
+      plt.subplot(d,n+1,counter)
+      plt.imshow(origImage, interpolation='nearest')
+      plt.set_cmap('gray')
       plt.axis('off')
+      counter += 1
+
+      samples = self.genSamplesHelper(myInput, n=n)
+      for i in xrange(n):
+        sampleImage = samples[i].reshape((dim,dim))
+        plt.subplot(d,n+1,counter)
+        plt.imshow(sampleImage, interpolation='nearest')
+        plt.set_cmap('binary')
+        plt.axis('off')
+        counter += 1
 
     plt.savefig("samples.png", bbox_inches='tight')
 
