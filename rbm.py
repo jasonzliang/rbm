@@ -1,5 +1,5 @@
 #!/usr/bin/python
-
+import random
 import os
 import numpy as np
 import math
@@ -59,6 +59,15 @@ class rbm(object):
         # print self.weights
       print "iterations: " + str(i+1) + " time elapsed: " + str(time.time() - start)
 
+  def transform(self, mat):
+    if len(mat.shape) == 1:
+      return self.sigmoidTransform(np.dot(self.weights, mat) + self.hiddenBias)
+    else:
+      newMat = np.empty((mat.shape[0], self.numHidden))
+      for i in xrange(mat.shape[0]):
+        newMat[i,:] = self.sigmoidTransform(np.dot(self.weights, mat[i,:]) + self.hiddenBias)
+      return newMat
+
   def visualizeFilters(self, n=100, dim=28):
     print "visualizing filters"
     plotDim = int(math.ceil(math.sqrt(n)))
@@ -88,7 +97,7 @@ class rbm(object):
     # plotDim = int(math.ceil(math.sqrt(n)))
     counter = 1
     for i in xrange(d):
-      myInput = data[i,:]
+      myInput = data[random.randrange(data.shape[0]),:]
       origImage = myInput.reshape((dim, dim))
       plt.subplot(d,n+1,counter)
       plt.imshow(origImage, interpolation='nearest')
@@ -104,30 +113,32 @@ class rbm(object):
         plt.set_cmap('binary')
         plt.axis('off')
         counter += 1
-
     plt.savefig("samples.png", bbox_inches='tight')
 
   def exportParams(self, fileName):
-    print "exporting weights"
     np.savez(fileName, weights=self.weights, hiddenBias=self.hiddenBias, visibleBias=self.visibleBias)
+    print "weights successfully exported"
 
   def importParams(self, fileName):
-    print "importing weights"
     npzfile = np.load(fileName)
     self.weights = npzfile["weights"]
     self.hiddenBias = npzfile["hiddenBias"]
     self.visibleBias = npzfile["visibleBias"]
+    print "weights successfully imported"
 
 if __name__ == '__main__':
   mnist = fetch_mldata('MNIST original')
+  permuteIndex = np.random.permutation(mnist.data.shape[0])
+  mnist.data = mnist.data/255.0
+  mnist.data = mnist.data[permuteIndex,:]
+  mnist.target = mnist.target[permuteIndex]
+
   myData = np.copy(mnist.data)
-  index = myData > 126
+  index = myData > 126/255.0
   # print index
   myData[index] = 1
   myData[~index] = 0
 
-  permuteIndex = np.random.permutation(myData.shape[0])
-  myData = myData[permuteIndex,:]
   # print myData[0]
   # print myData[0].reshape((28,28))
   # for i in xrange(myData.shape[0]):
@@ -136,14 +147,30 @@ if __name__ == '__main__':
   #   myData[index] = 1
   #   myData[~index] = 0
 
-  x = rbm(784, 500, 0.001)
+  x = rbm(784, 500, 0.005)
   
   try:
     x.importParams("trainedRBM.npz")
   except:
-    x.train(10, myData[:60000,:])
+    x.train(15, myData[:60000,:])
     x.exportParams("trainedRBM.npz")
 
-  x.visualizeFilters()
-  x.generateSamples(myData)
+  # x.visualizeFilters()
+  # x.generateSamples(myData[60000:,:])
+  # from sklearn.svm import SVC
+  from sklearn.linear_model import LogisticRegression
+  clf = LogisticRegression()
+  d = 60000
 
+  print "without rbm"
+  clf.fit(mnist.data[:d,:], mnist.target[:d])
+  print "accuracy: ", clf.score(mnist.data[d:,:], mnist.target[d:])
+
+  print "with rbm"
+  clf.fit(x.transform(mnist.data[:d,:]), mnist.target[:d])
+  print "accuracy: ", clf.score(x.transform(mnist.data[d:,:]), mnist.target[d:])
+
+  # without rbm
+  # accuracy:  0.918
+  # with rbm
+  # accuracy:  0.9693
