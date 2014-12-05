@@ -170,7 +170,7 @@ Alternatively, using free energy notation, the partial derivative can be defined
 \mathcal{F}(v) = -log \sum\limits_{h}e^{-E(v,h)}
 \end{equation} 
 
-Here, $\theta$ represents the model parameters for the RBM which include the weights $W$, hidden node biases $b$ and visible node biases $c$. Because the computation of the second term in (5) that defines the partial derivative is intractable, we can approximate the second term using a fixed number of samples from the model, such that 
+Here, $\Theta$ represents the model parameters for the RBM which include the weights $W$, hidden node biases $b$ and visible node biases $c$. Because the computation of the second term in (5) is intractable, we can approximate the second term using a fixed number of samples from the model, such that 
 
 \begin{equation}
 \begin{aligned}
@@ -196,14 +196,14 @@ Using the free energy function defined in (8) and the derivative defined in (7),
 \end{aligned}
 \end{equation}
 
-To obtain samples from p(v) and compute the gradient, one can treat the RBM as a Markov chain and perform Gibbs sampling by alternating between fixing the hidden nodes, sampling the visible nodes and vice-versa. Because of the conditional independence assumptions of the visible and hidden nodes such that 
+To obtain samples from p(v) and compute the gradient, one can treat the RBM as a Markov chain and perform Gibbs sampling by alternating between fixing the hidden nodes, sampling the visible nodes and vice-versa. We note the conditional independence assumptions for the hidden and visible layers:
 
 \begin{equation}
 \begin{aligned}
 p(h|v) = \prod\limits_{i} p(h_{i}|v)\\
 p(v|h) = \prod\limits_{j} p(v_{j}|h)
 \end{aligned}
-\end{equation} we can define the following conditional distributions that relate the hidden and visible nodes:
+\end{equation} and also the conditional distributions for each visible and hidden node:
 
 \begin{equation}
 \begin{aligned}
@@ -212,7 +212,7 @@ p(v_{j} = 1|j) = sigm(b_{j} + W_{i}'h)
 \end{aligned}
 \end{equation} where $sigm(x)$ is the logistic sigmoid function.
 
-Given the conditional independence assumptions of the RBM, we can perform block Gibbs Sampling with the following update rules:
+As a consequence of (10) and (11), we can perform block Gibbs Sampling with the following update rules:
 
 \begin{equation}
 \begin{aligned}
