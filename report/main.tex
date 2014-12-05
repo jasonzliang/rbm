@@ -116,7 +116,7 @@ In this report
 \IEEEpeerreviewmaketitle
 
 \section{Introduction}
-Restricted Boltzmann Machines (RBM) are a type of undirected graphical model consisting of two sets of nodes, a set of hidden units and a set of visible units.  Given the graph $G = (V,E)$ that describes the Restricted Boltzmann Machine, $\forall \, v_{vis} \: \epsilon \: V_{vis} \subset V,\exists e'\epsilon E$, such that $ e'=(v_{vis}, v_{hid}),\: \forall \, v_{hid} \, \epsilon \, V_{hid} \subset V$.  Restricted Boltzmann Machines are a variant of the Boltzmann Machine posed by Hinton and Sejnowski \cite{ackley1985learning}, with the restriction that there are neither edges connecting any visible units nor edges connecting any hidden units.  This restriction guarantees that the visible units are conditionally independent of other visible units; and hidden units, conditionally independent of hidden units. Restricted Boltzmann Machines today are commonly used in classification tasks, dimensionality reduction, and feature learning tasks.
+Restricted Boltzmann Machines (RBM) are a type of undirected graphical model consisting of two sets of nodes, a set of hidden units and a set of visible units.  Given the graph $G = (V,E)$ that describes the Restricted Boltzmann Machine, $\forall \, v_{vis} \: \epsilon \: V_{vis} \subset V,\exists e'\epsilon E$, such that $ e'=(v_{vis}, v_{hid}),\: \forall \, v_{hid} \, \epsilon \, V_{hid} \subset V$.  Restricted Boltzmann Machines are a variant of the Boltzmann Machine \cite{ackley1985learning} posed by Hinton and Sejnowski  \cite{hinton2006fast}, with the restriction that there are neither edges connecting any visible units nor edges connecting any hidden units.  This restriction guarantees that the visible units are conditionally independent of other visible units; and hidden units, conditionally independent of hidden units. Restricted Boltzmann Machines today are commonly used in classification tasks, dimensionality reduction, and feature learning tasks.
 
 \section{Previous Work}
 Restricted Boltzmann Machines were created as a variant of Boltzmann Machines after practical difficulties were encountered in training Boltzmann machines, namely the exponential training time required to learn weights in a Boltzmann Machine and sequential nature of training particular to the Boltzmann Machine.  Boltzmann Machine themselves were motivated primarily by limitations of Hopfield Networks \cite{hopfield1985neural}, primarily their poor storage capacity and tendency to converge at local energy minima.  
@@ -169,7 +169,7 @@ Because the computation of the second term in the difference that defines the pa
 \begin{aligned}
 - \frac{\partial p(v)}{\partial \Theta} = \frac{\partial \mathcal{F}(v)}{\partial \Theta} -\frac{1}{|\mathcal{N}|} \sum\limits_{\tilde{v} \epsilon \mathcal{N}} p(\tilde{v}) \frac{\partial \mathcal{F}(\tilde{v})}{\partial \Theta}
 \end{aligned}
-\end{equation}
+\end{equation} where theta represents the set of parameteters which include the weights and the biases for the hidden and visible nodes.
 
 In the case of a binary Restricted Boltzmann Machine, the free energy function reduces to the following:
 
@@ -214,14 +214,14 @@ v^{(n+1)} \sim sigm(Wh^{(n+1)} + b)
 \end{aligned}
 \end{equation}
 
-As $t \rightarrow \infty,  (v^{(t)},h^{(t)})$, the samples of $p(v,h)$ will be accurate.  Nevertheless, one can further speed up the process by using the "contrastive divergence," which involves initializing the Markov chain with a training example $v \epsilon V$ and running the Markov chain for k (often with $k = 1$) iterations.  In the context of the derivative defined in (7), contrastive divergence can be roughyl outlined as the following:
+As $t \rightarrow \infty,  (v^{(t)},h^{(t)})$, the samples of $p(v,h)$ will be accurate.  Nevertheless, one can further speed up the process by using the ''contrastive divergence" which involves initializing the Markov chain with a training example $v \epsilon V$ and running the Markov chain for k (often with $k = 1$) iterations.  In the context of the derivative defined in (7), contrastive divergence can be roughyl outlined as the following:
 
 \begin{enumerate}
  \item Replace the first term (expectation over all input samples) with a single sample.
  \item For the second term, run the Markov chain for fixed $k$ steps.
 \end{enumerate}
 
-More explicitly, contrastive divergence can be described as the following:
+More explicitly, contrastive divergence (in this example, CD-1) can be described as the following:
 
 \begin{enumerate}
 \item Take a training sample $v$, compute the probabilities of the hidden units and sample a hidden activation vector $h$ from this probability distribution.
@@ -230,6 +230,23 @@ More explicitly, contrastive divergence can be described as the following:
 \item Compute the outer product of $v'$ and $h'$ and call this the negative gradient.
 \item Let the weight update to $w_{i,j}$ be the positive gradient minus the negative gradient, times some learning rate (see equation (4)). 
 \end{enumerate}
+
+\begin{equation}
+\begin{aligned}
+\Delta w_{i,j} = \epsilon(vh^{T} - v'h'^{T})
+\end{aligned}
+\end{equation}
+
+The bias updates for the visible and hidden layers respectively can be defined by these expressions:
+
+\begin{equation}
+\begin{aligned}
+\Delta v_{b} = \epsilon(v - v')\\
+\Delta h_{b} = \epsilon(h - h')\\
+\end{aligned}
+\end{equation}
+
+This procedure of contrastive divergence can be generalized to k number of iterations of the aforementioned procedure in k iterations, though in practice it has been found that 1 iteration (CD-1) works fairly well in ''[ensuring] that hidden features retain most of the information in the data vector" \cite{hinton2010practical}.  One extension of contrastive divergence is persistent contrastive divergence.  Persistent contrastive divergence enhances parameter updates by resuming iterations of the involved Markov chain from the last iteration instead of rerunning the Markov chain \cite{tieleman2008training}.
 
 \section{Recent Applications}
 One of the more recent applications of Restricted Boltzmann Machines is their use in stacks.  By stacking Restricted Boltzmann Machines, hidden layers can be trained on top of other hidden layers. After training multiple hidden layers, these layers can be unrolled to form a deterministic deep neural network.  A deep neural network of such variety can then be finely tuned with common training methods such as backpropagation.  In 2006, Hinton, using a similar structure alluded to here, trained a deep neural network, which achieved an error rate of 1.39\%, which outperformed a SVM with RBF kernel, which were considered state of the art at the time \cite{hinton2006fast}.
