@@ -170,7 +170,7 @@ Alternatively, using free energy notation, the partial derivative can be defined
 \mathcal{F}(v) = -log \sum\limits_{h}e^{-E(v,h)}
 \end{equation} 
 
-Here, $\Theta$ represents the model parameters for the RBM which include the weights $W$, hidden node biases $b$ and visible node biases $c$. Because the computation of the second term in (5) is intractable, we can approximate the second term using a fixed number of samples from the model, such that 
+Here, $\Theta$ represents the model parameters for the RBM which include the weights $W$, hidden node biases $b$ and visible node biases $c$. Because the computation of the second term in (5) is intractable, we can approximate the second term using a fixed number of samples $\tilde{v}$ from the model:
 
 \begin{equation}
 \begin{aligned}
@@ -178,15 +178,21 @@ Here, $\Theta$ represents the model parameters for the RBM which include the wei
 \end{aligned}
 \end{equation}
 
-In the case of a binary RBM, the free energy function reduces to the following:
-
+The free energy formula for RBMs in general is the following:
 \begin{equation}
 \begin{aligned}
 \mathcal{F}(v) = -b'v - \sum\limits_{i}log\sum\limits_{h_{i}}e^{h_{i}(c_{i}+W_{i}v)}
 \end{aligned}
 \end{equation}
 
-Using the free energy function defined in (8) and the derivative defined in (7), we can define the following update equations for the RBM's negative log likelihood gradient:
+For modeling binary images and to simplify calculations, one can use a binary RBM. In the case of a binary RBM, where each node can only take on a value of zero or one, the free energy function reduces to the following:
+\begin{equation}
+\begin{aligned}
+\mathcal{F}(v) = -b'v - \sum\limits_{i}log(1 + e^{c_{i}+W_{i}v})
+\end{aligned}
+\end{equation}
+
+Using the free energy function defined in (9) and the derivative defined in (7), we can define the following update equations for the RBM's negative log likelihood gradient:
 
 \begin{equation}
 \begin{aligned}
@@ -221,21 +227,21 @@ v^{(n+1)} \sim sigm(Wh^{(n+1)} + b)
 \end{aligned}
 \end{equation}
 
-As $t \rightarrow \infty,  (v^{(t)},h^{(t)})$, $v^{t}$ and $h^{t}$ will be accurate samples drawn from the RBM's distribution. Nevertheless, one can further speed up the process by using the contrastive divergence (CD) algorithm, which computes an approximation of the gradient by performing Gibbs sampling for a finite number of steps. This involves initializing the Markov chain with a training example $v \epsilon V$ and running the Markov chain for k (often with $k = 1$) steps. In the context of the gradient defined in (7), CD can be roughly outlined as the following:
+As $t \rightarrow \infty,  (v^{(t)},h^{(t)})$, $v^{t}$ and $h^{t}$ will be accurate samples drawn from the RBM's distribution. Nevertheless, one can further speed up the process by using the contrastive divergence (CD) algorithm, which computes an approximation of the gradient by performing Gibbs sampling for a finite number of steps. This involves initializing the Markov chain with a training example $v \epsilon V$ and running the Markov chain for k (often with $k = 1$) steps. CD makes the following simplifications for computing the gradient:
 
 \begin{enumerate}
  \item Replace the first term (expectation over all input samples) with a single sample.
  \item For the second term, run the Markov chain for fixed $k$ steps.
 \end{enumerate}
 
-Thus, CD-1, which runs the Markov Chain for only 1 step, can be described as the following:
+We will describe CD-1 below, which runs the Markov Chain for only 1 step.
 
 \begin{enumerate}
 \item Take a training sample $v$, compute the probabilities of the hidden units and sample a hidden activation vector $h$ from this probability distribution.
 \item Compute the outer product of $v$ and $h$ and call this the positive gradient.
 \item From $h$, sample a reconstruction $v'$ of the visible units, then resample the hidden activations $h'$ from this. (Gibbs sampling step)
 \item Compute the outer product of $v'$ and $h'$ and call this the negative gradient.
-\item Let the weight update to $w_{i,j}$ be the positive gradient minus the negative gradient, times some learning rate (see below). 
+\item Let the weight update to $w_{i,j}$ be the positive gradient minus the negative gradient, times some learning rate: 
 \end{enumerate}
 
 \begin{equation}
@@ -265,7 +271,7 @@ CD-k is a generalization of CD-1 by repeating the sampling process in step three
 \section{Applications of RBMs}
 RBMs has been show to be capable of representation learning, also known as manifold learning. Most real world data are high dimensional, but they tend to lie close to a low dimensional manifold that is embedded in the high dimensional space. What RBMs are essentially doing is learning a mapping that transforms the original input data (high dimensional vectors) into coordinates along that manifold (low dimensional vectors). After an RBM has been trained, it can be reinterpreted as a deterministic encoder, a single layer neural network that performs dimensionality reduction. Other dimensionality reduction techniques such as PCA can only learn a linear manifold or hyperplane. However, RBMs with sufficient number of hidden units are capable of learning any arbitrary manifold shapes. As shown in Fig.~\ref{reduce}, RBMs are much more effective than PCA in performing dimensionality reduction on an example dataset such as MNIST \cite{deng2012mnist}. The different classes of digits are more visually distinct and separable when using RBMs instead of PCA to transform the digits. 
 
-A popular application of RBMs that exploits their representation learning capabilities is stacking them to construct deep neural networks. After a RBM has been trained, the samples $h$ from the hidden layer can be used as input to train a second RBM. This can be extended to an arbitrary number of RBMs. After training multiple RBMs, they can be converted into a deep neural network by treating each RBM layer deterministically. A deep neural network of such variety can then be fine tuned with common supervised training methods such as backpropagation \cite{hinton2006reducing} and used for tasks like image classification. In 2006, Hinton used stacked RBMs to train a deep neural network that achieved an error rate of 1.39\%, which outperformed a SVM with RBF kernel, the state of the art at the time \cite{hinton2006fast}.
+A popular application of RBMs that exploits their representation learning capabilities is stacking them to construct deep neural networks. After a RBM has been trained, the samples $h$ from the hidden layer can be used as input to train a second RBM. This can be extended to an arbitrary number of RBMs. After training multiple RBMs, they can be converted into a deep neural network by treating each RBM layer deterministically. A deep neural network of such variety can then be fine tuned with common supervised training methods such as backpropagation \cite{hinton2006reducing} and used for tasks like image classification. In 2006, Hinton used stacked RBMs to train a deep neural network that achieved an error rate of 1.39\% and outperformed a SVM with RBF kernel, the state of the art at the time \cite{hinton2006fast}.
 
 \begin{figure}[h]
   \centering
@@ -275,7 +281,7 @@ A popular application of RBMs that exploits their representation learning capabi
 \end{figure}
 
 \section{Experimental Results}
-We implement our own RBM in Python with the NumPy library \cite{oliphant2006guide}. We train a RBM with 784 visible units and 500 hidden units on the MNIST handwritten digit dataset \cite{deng2012mnist}, a standard benchmark for image classification. The learning algorithm used is CD-1, which is the simplest of the CD methods but tends to work very well in practice. We initialize the weights of the RBM randomly by sampling them from a normal distribution with zero mean and 0.01 standard deviation. Next, we apply CD-1 to all 60,000 training images for 15 epochs with a learning rate 0.005.
+We implement our own RBM in Python with the NumPy library \cite{oliphant2006guide}. We train a RBM with 784 visible units and 500 hidden units on the MNIST handwritten digit dataset \cite{deng2012mnist}, a standard benchmark for image classification. The learning algorithm used is CD-1, which is the simplest of the CD methods and tends to work very well in practice. We initialize the weights of the RBM randomly by sampling them from a normal distribution with zero mean and 0.01 standard deviation. Next, we apply CD-1 to all 60,000 training images for 15 epochs with a learning rate 0.005.
 
 In Fig.~\ref{filters}, we visualize the trained weights of the RBM. Each hidden node is connected to all 784 visible nodes and thus we can display the weights corresponding to a hidden node as an image with the same dimension as the input digits. We see that the filters learned are interesting, with a diverse variety of different edge and blob detectors. 
 
