@@ -116,15 +116,23 @@ In this report
 \IEEEpeerreviewmaketitle
 
 \section{Introduction}
-Restricted Boltzmann Machines (RBM) are a type of undirected graphical model consisting of two sets of nodes, a set of hidden units and a set of visible units.  Given the graph $G = (V,E)$ that describes the Restricted Boltzmann Machine, $\forall \, v_{vis} \: \epsilon \: V_{vis} \subset V,\exists e'\epsilon E$, such that $ e'=(v_{vis}, v_{hid}),\: \forall \, v_{hid} \, \epsilon \, V_{hid} \subset V$.  Restricted Boltzmann Machines are a variant of the Boltzmann Machine \cite{ackley1985learning} posed by Hinton and Sejnowski  \cite{hinton2006fast}, with the restriction that there are neither edges connecting any visible units nor edges connecting any hidden units.  This restriction guarantees that the visible units are conditionally independent of other visible units; and hidden units, conditionally independent of hidden units. Restricted Boltzmann Machines today are commonly used in classification tasks, dimensionality reduction, and feature learning tasks.
+Restricted Boltzmann Machines (RBM) are a type of undirected graphical model consisting of two sets of nodes, a set of hidden units and a set of visible units.  Given the graph $G = (V,E)$ that describes the RBM, $\forall \, v_{vis} \: \epsilon \: V_{vis} \subset V,\exists e'\epsilon E$, such that $ e'=(v_{vis}, v_{hid}),\: \forall \, v_{hid} \, \epsilon \, V_{hid} \subset V$.  RBMs are a variant of the Boltzmann Machine \cite{ackley1985learning} posed by Hinton and Sejnowski, with the restriction that there are neither edges connecting any visible units nor edges connecting any hidden units \cite{hinton2006fast}.  This restriction guarantees that the visible units are conditionally independent of other visible units; and hidden units, conditionally independent of hidden units. RBMs today are commonly used in classification tasks, dimensionality reduction, and feature learning tasks.  The structure can be visually elucidated with the representation below.  This specific RBM has a hidden layer of 3 units and a visible layer of 6 units.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.9\linewidth]{rbm.png}
+  \caption{A graphical representation of a Restricted Boltzmann Machine illustrated by Cueto et. al \cite{cueto2009geometry}}
+  \label{filters}
+\end{figure}
 
 \section{Previous Work}
-Restricted Boltzmann Machines were created as a variant of Boltzmann Machines after practical difficulties were encountered in training Boltzmann machines, namely the exponential training time required to learn weights in a Boltzmann Machine and sequential nature of training particular to the Boltzmann Machine.  Boltzmann Machine themselves were motivated primarily by limitations of Hopfield Networks \cite{hopfield1985neural}, primarily their poor storage capacity and tendency to converge at local energy minima.  
+RBMs were created as a variant of Boltzmann Machines after practical difficulties were encountered in training Boltzmann machines, namely the exponential training time required to learn weights in a Boltzmann Machine and sequential nature of training particular to the Boltzmann Machine.  Boltzmann Machine themselves were motivated primarily by limitations of Hopfield Networks \cite{hopfield1985neural}: their poor storage capacity and tendency to converge at local energy minima.  
 
-In the early days of Boltzmann machines, Hinton and Sejnowski calculated the gradient of the log likelihood by ``[fixing] a training vector on the visible units, initializing the hidden units to random binary states, and using sequential Gibbs sampling of the hidden units" \cite{ackley1985learning}, using simulated annealing to speed up the convergence process.  Other attempts were made by Neal with persistent Markov chains \cite{neal1992connectionist} and Peterson and Anderson with mean-field methods (instead of Gibbs Sampling) to speed up the learning process \cite{peterson1987mean}. After Restricted Boltzmann Machines were posed as a simplifying restriction by Smolensky, Hinton discovered a way to speed up the learning process, coined ``contrastive divergence," which is described in this report \cite{hinton2006fast,hinton2010practical}.
+In the early days of Boltzmann machines, Hinton and Sejnowski calculated the gradient of the log likelihood by ``[fixing] a training vector on the visible units, initializing the hidden units to random binary states, and using sequential Gibbs sampling of the hidden units" \cite{ackley1985learning}, using simulated annealing to speed up the convergence process.  Other attempts were made by Neal with persistent Markov chains \cite{neal1992connectionist} and Peterson and Anderson with mean-field methods (instead of Gibbs Sampling) to speed up the learning process \cite{peterson1987mean}. After RBMs were posed as a simplifying restriction by Smolensky, Hinton discovered a way to speed up the learning process, coined ``contrastive divergence," (CD) which is described in this report \cite{carreira2005contrastive,hinton2006fast,hinton2010practical}.  
+
 
 \section{Algorithm Description}
-Given a set of training vectors, V, to train a Restricted Boltzmann, one aims to maximize the average log probability, $p(v), v \epsilon V$, where
+Given a set of training vectors, V, to train a RBM, one aims to maximize the average log probability, $p(v), v \epsilon V$, where
 \begin{equation}
 p(v) = \frac{1}{Z} \sum\limits_{h} e^{-E(v,h)},\;
 Z = \sum\limits_{v,h} e^{-E(v,h)}
@@ -171,7 +179,7 @@ Because the computation of the second term in the difference that defines the pa
 \end{aligned}
 \end{equation} where theta represents the set of parameteters which include the weights and the biases for the hidden and visible nodes.
 
-In the case of a binary Restricted Boltzmann Machine, the free energy function reduces to the following:
+In the case of a binary RBM, the free energy function reduces to the following:
 
 \begin{equation}
 \begin{aligned}
@@ -179,7 +187,7 @@ In the case of a binary Restricted Boltzmann Machine, the free energy function r
 \end{aligned}
 \end{equation}
 
-Using the free energy function defined in (8) and the derivative defined in (7), we can define the following update equations for the Restricted Boltzmann Machine's log likelihood gradient:
+Using the free energy function defined in (8) and the derivative defined in (7), we can define the following update equations for the RBM's log likelihood gradient:
 
 \begin{equation}
 \begin{aligned}
@@ -205,7 +213,7 @@ p(v_{j} = 1|j) = sigm(b_{j} + W_{i}'h)
 \end{aligned}
 \end{equation}
 
-Given the conditional independence assumptions of the Restricted Boltzmann Machine, we can perform block Gibbs Sampling with the following update rules:
+Given the conditional independence assumptions of the RBM, we can perform block Gibbs Sampling with the following update rules:
 
 \begin{equation}
 \begin{aligned}
@@ -214,14 +222,14 @@ v^{(n+1)} \sim sigm(Wh^{(n+1)} + b)
 \end{aligned}
 \end{equation}
 
-As $t \rightarrow \infty,  (v^{(t)},h^{(t)})$, the samples of $p(v,h)$ will be accurate.  Nevertheless, one can further speed up the process by using the ``contrastive divergence" which involves initializing the Markov chain with a training example $v \epsilon V$ and running the Markov chain for k (often with $k = 1$) iterations.  In the context of the derivative defined in (7), contrastive divergence can be roughly outlined as the following:
+As $t \rightarrow \infty,  (v^{(t)},h^{(t)})$, the samples of $p(v,h)$ will be accurate.  Nevertheless, one can further speed up the process by using ``contrastive divergence" (CD) which involves initializing the Markov chain with a training example $v \epsilon V$ and running the Markov chain for k (often with $k = 1$) iterations.  In the context of the derivative defined in (7), CD can be roughly outlined as the following:
 
 \begin{enumerate}
  \item Replace the first term (expectation over all input samples) with a single sample.
  \item For the second term, run the Markov chain for fixed $k$ steps.
 \end{enumerate}
 
-More explicitly, contrastive divergence (in this example, CD-1) can be described as the following:
+More explicitly, CD-1 can be described as the following:
 
 \begin{enumerate}
 \item Take a training sample $v$, compute the probabilities of the hidden units and sample a hidden activation vector $h$ from this probability distribution.
@@ -248,6 +256,7 @@ The bias updates for the visible and hidden layers respectively can be defined b
 
 CD-k is a generalization of CD-1 by repeating the sampling process in step three k times, though in practice it has been found that 1 iteration (CD-1) works fairly well in ``[ensuring] that hidden features retain most of the information in the data vector" \cite{hinton2010practical}.  One extension of contrastive divergence is persistent contrastive divergence (PCD). PCD enhances parameter updates by resuming iterations of the involved Markov chain from the last iteration instead of rerunning the Markov chain \cite{tieleman2008training}.
 
+<<<<<<< HEAD
 \begin{figure}[h]
   \centering
   \includegraphics[width=0.9\linewidth]{reduce.jpg}
@@ -268,7 +277,7 @@ A popular application of RBMs that exploits their representation learning capabi
 \end{figure}
 
 \section{Experimental Results}
-We implement our own Restricted Boltzmann Machine in Python with the NumPy library \cite{oliphant2006guide}. We train a RBM with 784 visible units and 500 hidden units on the MNIST handwritten digit dataset \cite{deng2012mnist}, a standard benchmark for image classification. The learning algorithm used is CD-1, which is the simplest of the contrastive divergence methods but tends to work very well in practice. We initialize the weights of the RBM randomly by sampling them from a normal distribution with zero mean and 0.01 standard deviation. Next, we apply CD-1 to all 60,000 training images for 15 epochs with a learning rate 0.005.
+We implement our own RBM in Python with the NumPy library \cite{oliphant2006guide}. We train a RBM with 784 visible units and 500 hidden units on the MNIST handwritten digit dataset \cite{deng2012mnist}, a standard benchmark for image classification. The learning algorithm used is CD-1, which is the simplest of the CD methods but tends to work very well in practice. We initialize the weights of the RBM randomly by sampling them from a normal distribution with zero mean and 0.01 standard deviation. Next, we apply CD-1 to all 60,000 training images for 15 epochs with a learning rate 0.005.
 
 In Fig.~\ref{filters}, we visualize the trained weights of the RBM. Each hidden node is connected to all 784 visible nodes and thus we can display the weights corresponding to a hidden node as an image with the same dimension as the input digits. We see that the filters learned are interesting, with a diverse variety of different edge and blob detectors. 
 
@@ -286,6 +295,7 @@ Lastly, we explore the usefulness of RBMs in learning good representations of th
 \section{Conclusion}
 
 As demonstrated in previous research and in our experiments, Restricted Boltzmann Machines are capable of learning complex distributions and good representations of the input data. They are also useful as a preprocessing step that improves the classification accuracy for the input data. With their relatively simple training procedures and given recent innovations in the use of RBMs, they are widely applied in many problem domains and are a crucial step for building deep neural networks.
+
 
 
 
