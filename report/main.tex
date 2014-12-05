@@ -110,7 +110,7 @@
 \maketitle
 
 \begin{abstract}
-In this report 
+In this report, we describe an undirected graphical model called Restricted Boltzmann Machine (RBM) that is capable of learning complex distributions. We analyze learning procedures and applications of RBMs and show experimental results for training RBMs on a standard image dataset.
 \end{abstract}
 
 \IEEEpeerreviewmaketitle
@@ -256,7 +256,6 @@ The bias updates for the visible and hidden layers respectively can be defined b
 
 CD-k is a generalization of CD-1 by repeating the sampling process in step three k times, though in practice it has been found that 1 iteration (CD-1) works fairly well in ``[ensuring] that hidden features retain most of the information in the data vector" \cite{hinton2010practical}.  One extension of contrastive divergence is persistent contrastive divergence (PCD). PCD enhances parameter updates by resuming iterations of the involved Markov chain from the last iteration instead of rerunning the Markov chain \cite{tieleman2008training}.
 
-<<<<<<< HEAD
 \begin{figure}[h]
   \centering
   \includegraphics[width=0.9\linewidth]{reduce.jpg}
